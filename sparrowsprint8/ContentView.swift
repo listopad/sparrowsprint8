@@ -57,7 +57,9 @@ struct Slider: View {
             .onEnded({ value in
                 sliderHeight = max(0, min(maxHeight, sliderHeight))
                 lastDragValue = sliderHeight
-                scaleEffect = 0
+                withAnimation {
+                    scaleEffect = 0
+                }
             }))
             .scaleEffect(
                 CGSize(width: 1.0 - abs(scaleEffect) / 2, height: 1.0 + abs(scaleEffect)),
