@@ -8,28 +8,26 @@
 import SwiftUI
 
 struct ContentView: View {
+    @State var percentage: Float = 50
+
     var body: some View {
-        @State var percentage: Float = 50
-        
         ZStack {
             Image("wallpaper")
                 .resizable()
                 .edgesIgnoringSafeArea(.all)
-            
+
             Slider()
         }
     }
 }
 
 struct Slider: View {
-    private let overlayHeight: CGFloat = 100;
-    
     @State private var maxHeight: CGFloat = 250
-    
-    @State private var sliderProgress: CGFloat = 0
     @State private var sliderHeight: CGFloat = 0
     @State private var lastDragValue: CGFloat = 0
-    
+    @State private var scaleEffect: CGFloat = 0
+    private let maxScaleEffect: CGFloat = 0.15
+
     var body: some View {
         ZStack(alignment: .bottom) {
             Rectangle()
@@ -43,29 +41,31 @@ struct Slider: View {
         .gesture(DragGesture(minimumDistance: 0)
             .onChanged({ value in
                 let translation = value.translation
-                
+
                 sliderHeight = -translation.height + lastDragValue
-                
-                sliderHeight = sliderHeight > maxHeight ? maxHeight : sliderHeight
-                
-                sliderHeight = sliderHeight >= 0 ? sliderHeight : 0
+
+                withAnimation {
+                    if sliderHeight > maxHeight {
+                        scaleEffect = min(maxScaleEffect, 1 - maxHeight / sliderHeight)
+                    } else if sliderHeight < 0 {
+                        scaleEffect = -min(maxScaleEffect, 1 - maxHeight / (maxHeight + abs(sliderHeight)))
+                    } else {
+                        scaleEffect = 0
+                    }
+                }
             })
-                 
             .onEnded({ value in
-                
-                sliderHeight = sliderHeight > maxHeight ? maxHeight : sliderHeight
-                
-                sliderHeight = sliderHeight >= 0 ? sliderHeight : 0
-                
+                sliderHeight = max(0, min(maxHeight, sliderHeight))
                 lastDragValue = sliderHeight
-                
-                
+                scaleEffect = 0
             }))
+            .scaleEffect(
+                CGSize(width: 1.0 - abs(scaleEffect) / 2, height: 1.0 + abs(scaleEffect)),
+                anchor: scaleEffect >= 0 ? .bottom : .top
+            )
     }
 }
 
-struct ContentView_Previews: PreviewProvider {
-    static var previews: some View {
-        ContentView()
-    }
+#Preview {
+    ContentView()
 }
