@@ -22,19 +22,44 @@ struct ContentView: View {
 }
 
 struct Slider: View {
-    private let sliderHeight: CGFloat = 200
+    private let overlayHeight: CGFloat = 100;
+    
+    @State private var maxHeight: CGFloat = 250
+    
+    @State private var sliderProgress: CGFloat = 0
+    @State private var sliderHeight: CGFloat = 0
+    @State private var lastDragValue: CGFloat = 0
     
     var body: some View {
-        ZStack(alignment: .leading) {
-            RoundedRectangle(cornerRadius: 20)
+        ZStack(alignment: .bottom) {
+            Rectangle()
                 .foregroundStyle(.ultraThinMaterial)
-            RoundedRectangle(cornerRadius: 20)
+            Rectangle()
                 .foregroundColor(.white)
+                .frame(height: sliderHeight)
         }
-        .frame(width: 80, height: sliderHeight)
+        .frame(width: 80, height: maxHeight)
+        .cornerRadius(25)
         .gesture(DragGesture(minimumDistance: 0)
             .onChanged({ value in
-                // Handle the drag gesture
+                let translation = value.translation
+                
+                sliderHeight = -translation.height + lastDragValue
+                
+                sliderHeight = sliderHeight > maxHeight ? maxHeight : sliderHeight
+                
+                sliderHeight = sliderHeight >= 0 ? sliderHeight : 0
+            })
+                 
+            .onEnded({ value in
+                
+                sliderHeight = sliderHeight > maxHeight ? maxHeight : sliderHeight
+                
+                sliderHeight = sliderHeight >= 0 ? sliderHeight : 0
+                
+                lastDragValue = sliderHeight
+                
+                
             }))
     }
 }
